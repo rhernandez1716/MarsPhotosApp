@@ -4,14 +4,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import me.rodolfohernandez.marsphotosapp.data.NetworkMarsPhotosRepository
-import me.rodolfohernandez.marsphotosapp.network.MarsApi
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import me.rodolfohernandez.marsphotosapp.MarsPhotosApplication
+import me.rodolfohernandez.marsphotosapp.data.MarsPhotosRepository
 import kotlinx.coroutines.launch
 import java.io.IOException
 
 
-class MarsViewModel : ViewModel() {
+class MarsViewModel(private val marsPhotosRepository: MarsPhotosRepository) : ViewModel() {
     var marsUiState: MarsUiState by mutableStateOf(MarsUiState.Loading)
         private set
 
@@ -22,11 +26,20 @@ class MarsViewModel : ViewModel() {
     fun getMarsPhotos() {
         viewModelScope.launch {
             try {
-                val marsPhotosRepository = NetworkMarsPhotosRepository()
                 val response = marsPhotosRepository.getMarsPhotos()
                 marsUiState = MarsUiState.Success("${response.size} fotos desdes la api.")
             } catch (e: IOException) {
                 marsUiState = MarsUiState.Error
+            }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as MarsPhotosApplication)
+                val marsPhotosRepository = application.container.marsPhotosRepository
+                MarsViewModel(marsPhotosRepository = marsPhotosRepository)
             }
         }
     }
