@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "me.rodolfohernandez.marsphotosapp"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
